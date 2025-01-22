@@ -119,6 +119,14 @@ Add an output step, such as "Text file output" (to write to a CSV file) or "Tabl
 Connect it to the "Select values" step.
 Configure the output step according to your needs (filename, database connection, table name, etc.).
 
+
+
+**Use Case Implementation using Pentaho**
+
+**1. To find the customer who has the highest order value (TotalOrderValue)**
+
+**2. To find the total number of orders by each employee**
+
 **Transformation Flow:**
 
 Customer Input --> Sort Customers -->
