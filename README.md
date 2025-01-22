@@ -15,7 +15,7 @@ Customer Dimension: CustomerDimension (CustomerKey (INT, PRIMARY KEY), CustomerI
 
 Order Fact: OrderFact (OrderKey (INT, PRIMARY KEY), CustomerID (INT), OrderDate (DATE), Quantity (INT), UnitPrice (NUMERIC), TotalOrderValue (NUMERIC))
 
-**3. Set up the Environment: **
+**3.Set up the Environment:**
 
 Install Pentaho PDI. If you are working with a database from PostgreSQL or MySQLServer, then install that particular software and create database connections to Pentaho
 
