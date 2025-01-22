@@ -3,6 +3,8 @@
 
 **Project Goal:** Extract customer and order data from CSV files, transform it (standardize names, create unique IDs, calculate total order value), and load it into Microsoft Excel
 
+**Project Details and Workflow**
+
 **1. Data Sources:**
 
 Customers.csv
