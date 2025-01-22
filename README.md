@@ -29,16 +29,21 @@ Create two "CSV file input" steps, one for Customers.csv and one for Orders.csv.
 
 B. Transform (Customers):
 
-Standardize Names: "String operations" step with "InitCap".
-Handle Nulls (JoinDate): "Value Mapper" step to replace null JoinDate values with a default date (e.g., '1900-01-01').
-String to Date Conversion: "Select Values" step to convert JoinDate to Date Data Type using format yyyy-MM-dd.
-Generate Surrogate Key: "Sequence" step for CustomerKey.
+1) Standardize Names: "String operations" step with "InitCap".
+
+2) Handle Nulls (JoinDate): "Value Mapper" step to replace null JoinDate values with a default date (e.g., '1900-01-01').
+
+3) String to Date Conversion: "Select Values" step to convert JoinDate to Date Data Type using format yyyy-MM-dd.
+ 
+4) Generate Surrogate Key: "Sequence" step for CustomerKey.
 
 C. Transform (Orders):
 
-Calculate Total Order Value: "Calculator" step: TotalOrderValue = Quantity * UnitPrice.
-String to Date Conversion: "Select Values" step to convert OrderDate to Date Data Type using format yyyy-MM-dd.
-Generate Surrogate Key: "Sequence" step for OrderKey.
+1) Calculate Total Order Value: "Calculator" step: TotalOrderValue = Quantity * UnitPrice.
+   
+2) String to Date Conversion: "Select Values" step to convert OrderDate to Date Data Type using format yyyy-MM-dd.
+   
+3) Generate Surrogate Key: "Sequence" step for OrderKey.
 
 D. Load (Table Output):
 
@@ -49,25 +54,36 @@ Two "Table output" steps, one for CustomerDimension and one for OrderFact.
 1. Input Steps (CSV File Input):
 
 Customer Data:
-Add a "CSV file input" step.
-Configure it to read your cleaned customer data CSV file.
-Set the delimiter, enclosure, and other necessary settings.
-Name this step something descriptive, like "Customer Input".
+
+1) Add a "CSV file input" step.
+ 
+2) Configure it to read your cleaned customer data CSV file.
+ 
+3) Set the delimiter, enclosure, and other necessary settings.
+ 
+4) Name this step something descriptive, like "Customer Input".
+
 Order Data:
-Add another "CSV file input" step.
-Configure it to read your cleaned order data CSV file.
-Set the appropriate settings.
-Name this step "Order Input".
+
+1) Add another "CSV file input" step.
+
+2) Configure it to read your cleaned order data CSV file.
+
+3) Set the appropriate settings.
+
+4) Name this step "Order Input".
 
 2. Sort Steps (Sort Rows):
 
 Crucially, you must sort both input streams by the join key (CustomerID) before the merge join.
-Customer Sort:
+
+1) Customer Sort:
 Add a "Sort rows" step.
 Connect it to the "Customer Input" step.
 Sort by the CustomerID field in ascending order.
 Name this step "Sort Customers".
-Order Sort:
+
+2) Order Sort:
 Add another "Sort rows" step.
 Connect it to the "Order Input" step.
 Sort by the CustomerID field in ascending order.
