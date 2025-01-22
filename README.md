@@ -135,3 +135,5 @@ Order Input    --> Sort Orders    -->
 **1. To find the customer who has the highest order value (TotalOrderValue)**
 
 **2. To find the total number of orders by each employee**
+
+**3. To create a dashboard using Power BI**
