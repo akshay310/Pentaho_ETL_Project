@@ -26,6 +26,7 @@ Install Pentaho PDI. If you are working with a database from PostgreSQL or MySQL
 A. Extract (CSV Input):
 
 Create two "CSV file input" steps, one for Customers.csv and one for Orders.csv. It is recommended that you transform both in separate files
+
 B. Transform (Customers):
 
 Standardize Names: "String operations" step with "InitCap".
