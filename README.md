@@ -12,7 +12,9 @@ Orders.csv
 2. Data Warehouse Schema:
 
 Customer Dimension: CustomerDimension (CustomerKey (INT, PRIMARY KEY), CustomerID (INT), Name (VARCHAR), City (VARCHAR), Country (VARCHAR), JoinDate (DATE))
+
 Order Fact: OrderFact (OrderKey (INT, PRIMARY KEY), CustomerID (INT), OrderDate (DATE), Quantity (INT), UnitPrice (NUMERIC), TotalOrderValue (NUMERIC))
+
 3. Set up the Environment: 
 
 Install Pentaho PDI. If you are working with a database from PostgreSQL or MySQLServer, then install that particular software and create database connections to Pentaho
@@ -55,6 +57,7 @@ Add another "CSV file input" step.
 Configure it to read your cleaned order data CSV file.
 Set the appropriate settings.
 Name this step "Order Input".
+
 2. Sort Steps (Sort Rows):
 
 Crucially, you must sort both input streams by the join key (CustomerID) before the merge join.
@@ -68,6 +71,7 @@ Add another "Sort rows" step.
 Connect it to the "Order Input" step.
 Sort by the CustomerID field in ascending order.
 Name this step "Sort Orders".
+
 3. Merge Join Step:
 
 Add a "Merge join" step.
@@ -77,6 +81,7 @@ Configure the "Merge join" step:
 Join Type: Choose "Inner Join". This will only output rows where there's a match in both datasets.
 Key 1: CustomerID (from the customer stream).
 Key 2: CustomerID (from the order stream).
+
 4. Select Values Step:
 
 Add a "Select values" step.
@@ -90,11 +95,13 @@ OrderDate
 Quantity
 Price
 TotalOrdervalue
+
 5. Output Step (e.g., Text file output, Table output):
 
 Add an output step, such as "Text file output" (to write to a CSV file) or "Table output" (to write to a database table).
 Connect it to the "Select values" step.
 Configure the output step according to your needs (filename, database connection, table name, etc.).
+
 Transformation Flow:
 
 Customer Input --> Sort Customers -->
