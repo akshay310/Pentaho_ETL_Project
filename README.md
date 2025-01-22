@@ -5,8 +5,9 @@ Project Goal: Extract customer and order data from CSV files, transform it (stan
 
 1. Data Sources:
 
-Customers.csv: 
-Orders.csv:
+Customers.csv
+
+Orders.csv
 
 2. Data Warehouse Schema:
 
@@ -39,3 +40,63 @@ Generate Surrogate Key: "Sequence" step for OrderKey.
 D. Load (Table Output):
 
 Two "Table output" steps, one for CustomerDimension and one for OrderFact.
+
+4 b) Core Layer
+
+1. Input Steps (CSV File Input):
+
+Customer Data:
+Add a "CSV file input" step.
+Configure it to read your cleaned customer data CSV file.
+Set the delimiter, enclosure, and other necessary settings.
+Name this step something descriptive, like "Customer Input".
+Order Data:
+Add another "CSV file input" step.
+Configure it to read your cleaned order data CSV file.
+Set the appropriate settings.
+Name this step "Order Input".
+2. Sort Steps (Sort Rows):
+
+Crucially, you must sort both input streams by the join key (CustomerID) before the merge join.
+Customer Sort:
+Add a "Sort rows" step.
+Connect it to the "Customer Input" step.
+Sort by the CustomerID field in ascending order.
+Name this step "Sort Customers".
+Order Sort:
+Add another "Sort rows" step.
+Connect it to the "Order Input" step.
+Sort by the CustomerID field in ascending order.
+Name this step "Sort Orders".
+3. Merge Join Step:
+
+Add a "Merge join" step.
+Connect the "Sort Customers" step to the first input of the "Merge join" step (the "main stream").
+Connect the "Sort Orders" step to the second input of the "Merge join" step (the "lookup stream").
+Configure the "Merge join" step:
+Join Type: Choose "Inner Join". This will only output rows where there's a match in both datasets.
+Key 1: CustomerID (from the customer stream).
+Key 2: CustomerID (from the order stream).
+4. Select Values Step:
+
+Add a "Select values" step.
+Connect it to the "Merge join" step.
+In the "Select values" step, select only the desired output fields and their correct names:
+OrderKey
+CustomerID
+CustomerName
+Country
+OrderDate
+Quantity
+Price
+TotalOrdervalue
+5. Output Step (e.g., Text file output, Table output):
+
+Add an output step, such as "Text file output" (to write to a CSV file) or "Table output" (to write to a database table).
+Connect it to the "Select values" step.
+Configure the output step according to your needs (filename, database connection, table name, etc.).
+Transformation Flow:
+
+Customer Input --> Sort Customers -->
+                                       Merge Join --> Select Values --> Output
+Order Input    --> Sort Orders    -->
