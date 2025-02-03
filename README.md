@@ -1,139 +1,167 @@
+# Enhanced Customer ETL
 
-**Project Title: Enhanced Customer ETL**
+## Project Goal
+Extract customer and order data from CSV files, transform it (standardize names, create unique IDs, calculate total order value), and load it into Microsoft Excel.
 
-**Project Goal:** Extract customer and order data from CSV files, transform it (standardize names, create unique IDs, calculate total order value), and load it into Microsoft Excel
+## Project Details and Workflow
 
-**Project Details and Workflow**
+### 1. Data Sources:
+- **Customers.csv**
+- **Orders.csv**
 
-**1. Data Sources:**
+### 2. Data Warehouse Schema:
+#### Customer Dimension: `CustomerDimension`
+| Column       | Data Type    | Description |
+|-------------|-------------|-------------|
+| CustomerKey | INT, PRIMARY KEY | Surrogate key for customers |
+| CustomerID  | INT         | Original customer ID |
+| Name        | VARCHAR     | Customer name |
+| City        | VARCHAR     | Customer city |
+| Country     | VARCHAR     | Customer country |
+| JoinDate    | DATE        | Customer join date |
 
-Customers.csv
+#### Order Fact: `OrderFact`
+| Column       | Data Type    | Description |
+|-------------|-------------|-------------|
+| OrderKey    | INT, PRIMARY KEY | Surrogate key for orders |
+| CustomerID  | INT         | Original customer ID |
+| OrderDate   | DATE        | Date of order |
+| Quantity    | INT         | Number of items in order |
+| UnitPrice   | NUMERIC     | Price per unit |
+| TotalOrderValue | NUMERIC | Computed total order value |
 
-Orders.csv
+---
 
-**2. Data Warehouse Schema:**
+## 3. Set up the Environment:
+- Install **Pentaho PDI**.
+- If using a database (e.g., **PostgreSQL** or **MySQLServer**), install it and create database connections in Pentaho.
 
-Customer Dimension: CustomerDimension (CustomerKey (INT, PRIMARY KEY), CustomerID (INT), Name (VARCHAR), City (VARCHAR), Country (VARCHAR), JoinDate (DATE))
+---
 
-Order Fact: OrderFact (OrderKey (INT, PRIMARY KEY), CustomerID (INT), OrderDate (DATE), Quantity (INT), UnitPrice (NUMERIC), TotalOrderValue (NUMERIC))
+## 4. Develop ETL Transformations:
 
-**3. Set up the Environment:**
+### **4a) Staging Layer**
 
-Install Pentaho PDI. If you are working with a database from PostgreSQL or MySQLServer, then install that particular software and create database connections to Pentaho
+#### **A. Extract (CSV Input):**
+- Create two **"CSV file input"** steps:
+  - One for `Customers.csv`
+  - One for `Orders.csv`
 
-**4. Develop ETL Transformations:**
+#### **B. Transform (Customers):**
+1. **Standardize Names:** Use **"String operations"** step with **"InitCap"**.
+2. **Handle Nulls (JoinDate):** Use **"Value Mapper"** step to replace null `JoinDate` values with a default date (e.g., '1900-01-01').
+3. **String to Date Conversion:** Use **"Select Values"** step to convert `JoinDate` to `Date` format (`yyyy-MM-dd`).
+4. **Generate Surrogate Key:** Use **"Sequence"** step for `CustomerKey`.
 
-**4 a) Staging Layer**
+#### **C. Transform (Orders):**
+1. **Calculate Total Order Value:** Use **"Calculator"** step:
+   ```
+   TotalOrderValue = Quantity * UnitPrice
+   ```
+2. **String to Date Conversion:** Use **"Select Values"** step to convert `OrderDate` to `Date` format (`yyyy-MM-dd`).
+3. **Generate Surrogate Key:** Use **"Sequence"** step for `OrderKey`.
 
-**A. Extract (CSV Input):**
+#### **D. Load (Table Output):**
+- Use **"Table output"** steps for both `CustomerDimension` and `OrderFact`.
 
-Create two "CSV file input" steps, one for Customers.csv and one for Orders.csv. It is recommended that you transform both in separate files
+---
 
-**B. Transform (Customers):**
+### **4b) Core Layer**
 
-**1) Standardize Names:** "String operations" step with "InitCap".
+#### **1. Input Steps (CSV File Input):**
+- **Customer Data:**
+  - Add a "CSV file input" step.
+  - Configure it to read the cleaned customer data.
+  - Set delimiter, enclosure, and required settings.
+- **Order Data:**
+  - Add another "CSV file input" step.
+  - Configure it for the cleaned order data.
 
-**2) Handle Nulls (JoinDate):** "Value Mapper" step to replace null JoinDate values with a default date (e.g., '1900-01-01').
+#### **2. Sort Steps (Sort Rows):**
+- **Customer Sort:**
+  - Add "Sort rows" step.
+  - Connect to "Customer Input".
+  - Sort by `CustomerID` (ascending order).
+- **Order Sort:**
+  - Add "Sort rows" step.
+  - Connect to "Order Input".
+  - Sort by `CustomerID` (ascending order).
 
-**3) String to Date Conversion:** "Select Values" step to convert JoinDate to Date Data Type using format yyyy-MM-dd.
- 
-**4) Generate Surrogate Key:** "Sequence" step for CustomerKey.
+#### **3. Merge Join Step:**
+- Add **"Merge join"** step.
+- Connect "Sort Customers" as the **main stream**.
+- Connect "Sort Orders" as the **lookup stream**.
+- Configure join type as **"Inner Join"** on `CustomerID`.
 
-**C. Transform (Orders):**
+#### **4. Select Values Step:**
+- Add **"Select values"** step.
+- Choose required fields:
+  ```
+  OrderKey, CustomerID, CustomerName, Country, OrderDate, Quantity, Price, TotalOrderValue
+  ```
 
-**1) Calculate Total Order Value:** "Calculator" step: TotalOrderValue = Quantity * UnitPrice.
-   
-**2) String to Date Conversion:** "Select Values" step to convert OrderDate to Date Data Type using format yyyy-MM-dd.
-   
-**3) Generate Surrogate Key:** "Sequence" step for OrderKey.
+#### **5. Output Step (Text file or Table output):**
+- Use "Text file output" (CSV) or "Table output" (Database).
+- Connect it to "Select values" step.
 
-**D. Load (Table Output):**
-
-Two "Table output" steps, one for CustomerDimension and one for OrderFact.
-
-**4 b) Core Layer**
-
-**1. Input Steps (CSV File Input):**
-
-**Customer Data:**
-
-1) Add a "CSV file input" step.
- 
-2) Configure it to read your cleaned customer data CSV file.
- 
-3) Set the delimiter, enclosure, and other necessary settings.
- 
-4) Name this step something descriptive, like "Customer Input".
-
-**Order Data:**
-
-1) Add another "CSV file input" step.
-
-2) Configure it to read your cleaned order data CSV file.
-
-3) Set the appropriate settings.
-
-4) Name this step "Order Input".
-
-**2. Sort Steps (Sort Rows):**
-
-Crucially, you must sort both input streams by the join key (CustomerID) before the merge join.
-
-**1) Customer Sort:**
-Add a "Sort rows" step.
-Connect it to the "Customer Input" step.
-Sort by the CustomerID field in ascending order.
-Name this step "Sort Customers".
-
-**2) Order Sort:**
-Add another "Sort rows" step.
-Connect it to the "Order Input" step.
-Sort by the CustomerID field in ascending order.
-Name this step "Sort Orders".
-
-**3. Merge Join Step:**
-
-Add a "Merge join" step.
-Connect the "Sort Customers" step to the first input of the "Merge join" step (the "main stream").
-Connect the "Sort Orders" step to the second input of the "Merge join" step (the "lookup stream").
-Configure the "Merge join" step:
-Join Type: Choose "Inner Join". This will only output rows where there's a match in both datasets.
-Key 1: CustomerID (from the customer stream).
-Key 2: CustomerID (from the order stream).
-
-**4. Select Values Step:**
-
-Add a "Select values" step.
-Connect it to the "Merge join" step.
-In the "Select values" step, select only the desired output fields and their correct names:
-OrderKey
-CustomerID
-CustomerName
-Country
-OrderDate
-Quantity
-Price
-TotalOrdervalue
-
-**5. Output Step (e.g., Text file output, Table output):**
-
-Add an output step, such as "Text file output" (to write to a CSV file) or "Table output" (to write to a database table).
-Connect it to the "Select values" step.
-Configure the output step according to your needs (filename, database connection, table name, etc.).
-
-
-**Transformation Flow:**
-
+### **Transformation Flow:**
+```
 Customer Input --> Sort Customers -->
-                                       Merge Join --> Select Values --> Output
+                                      Merge Join --> Select Values --> Output
 Order Input    --> Sort Orders    -->
+```
 
+---
 
+## **Use Case Implementation using Pentaho**
 
-**Use Case Implementation using Pentaho**
+### **1. To find the customer who has the highest order value (TotalOrderValue):**
+```sql
+SELECT CustomerID, SUM(TotalOrderValue) AS TotalSpent
+FROM OrderFact
+GROUP BY CustomerID
+ORDER BY TotalSpent DESC
+LIMIT 1;
+```
 
-**1. To find the customer who has the highest order value (TotalOrderValue)**
+### **2. To find the total number of orders by each employee:**
+```sql
+SELECT CustomerID, COUNT(OrderKey) AS TotalOrders
+FROM OrderFact
+GROUP BY CustomerID;
+```
 
-**2. To find the total number of orders by each employee**
+### **3. To create a dashboard using Power BI:**
+- Connect Power BI to the transformed **CustomerDimension** and **OrderFact** tables.
+- Create visualizations such as:
+  - **Total Orders per Customer**
+  - **Total Revenue per Country**
+  - **Monthly Order Trends**
 
-**3. To create a dashboard using Power BI**
+---
+
+## **Project Repository Structure:**
+```
+📂 Enhanced_Customer_ETL
+│── 📂 data_sources
+│   │── customers.csv
+│   │── orders.csv
+│
+│── 📂 etl_scripts
+│   │── customer_transformation.ktr
+│   │── order_transformation.ktr
+│
+│── 📂 sql_queries
+│   │── customer_highest_order.sql
+│   │── total_orders_by_employee.sql
+│
+│── 📂 power_bi_dashboard
+│   │── customer_orders.pbix
+│
+│── README.md
+```
+
+---
+
+## **Conclusion:**
+This project demonstrates how to efficiently extract, transform, and load customer and order data using **Pentaho PDI**. By integrating **Power BI**, users can derive valuable insights from the transformed data, improving decision-making and customer analysis.
